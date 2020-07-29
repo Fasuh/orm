@@ -11,14 +11,14 @@ import 'package:source_gen/source_gen.dart' hide LibraryBuilder;
 import 'orm_build_context.dart';
 
 Builder migrationBuilder(BuilderOptions options) {
-  return SharedPartBuilder([
-    MigrationGenerator(
+  return new SharedPartBuilder([
+    new MigrationGenerator(
         autoSnakeCaseNames: options.config['auto_snake_case_names'] != false)
   ], 'angel_migration');
 }
 
 class MigrationGenerator extends GeneratorForAnnotation<Orm> {
-  static final Parameter _schemaParam = Parameter((b) => b
+  static final Parameter _schemaParam = new Parameter((b) => b
     ..name = 'schema'
     ..type = refer('Schema'));
   static final Reference _schema = refer('schema');
@@ -26,14 +26,13 @@ class MigrationGenerator extends GeneratorForAnnotation<Orm> {
   /// If `true` (default), then field names will automatically be (de)serialized as snake_case.
   final bool autoSnakeCaseNames;
 
-  const MigrationGenerator({this.autoSnakeCaseNames = true});
+  const MigrationGenerator({this.autoSnakeCaseNames: true});
 
   @override
   Future<String> generateForAnnotatedElement(
       Element element, ConstantReader annotation, BuildStep buildStep) async {
-    if (element is! ClassElement) {
+    if (element is! ClassElement)
       throw 'Only classes can be annotated with @ORM().';
-    }
 
     var generateMigrations =
         annotation.peek('generateMigrations')?.boolValue ?? true;
@@ -43,18 +42,18 @@ class MigrationGenerator extends GeneratorForAnnotation<Orm> {
     }
 
     var resolver = await buildStep.resolver;
-    var ctx = await buildOrmContext({}, element as ClassElement, annotation,
+    var ctx = await buildOrmContext(element as ClassElement, annotation,
         buildStep, resolver, autoSnakeCaseNames != false);
     var lib = generateMigrationLibrary(
         ctx, element as ClassElement, resolver, buildStep);
     if (lib == null) return null;
-    return DartFormatter().format(lib.accept(DartEmitter()).toString());
+    return new DartFormatter().format(lib.accept(new DartEmitter()).toString());
   }
 
   Library generateMigrationLibrary(OrmBuildContext ctx, ClassElement element,
       Resolver resolver, BuildStep buildStep) {
-    return Library((lib) {
-      lib.body.add(Class((clazz) {
+    return new Library((lib) {
+      lib.body.add(new Class((clazz) {
         clazz
           ..name = '${ctx.buildContext.modelClassName}Migration'
           ..extend = refer('Migration')
@@ -65,7 +64,7 @@ class MigrationGenerator extends GeneratorForAnnotation<Orm> {
   }
 
   Method buildUpMigration(OrmBuildContext ctx, LibraryBuilder lib) {
-    return Method((meth) {
+    return new Method((meth) {
       var autoIdAndDateFields = const TypeChecker.fromRuntime(Model)
           .isAssignableFromType(ctx.buildContext.clazz.type);
       meth
@@ -73,23 +72,20 @@ class MigrationGenerator extends GeneratorForAnnotation<Orm> {
         ..annotations.add(refer('override'))
         ..requiredParameters.add(_schemaParam);
 
-      //var closure = Method.closure()..addPositional(parameter('table'));
-      var closure = Method((closure) {
+      //var closure = new Method.closure()..addPositional(parameter('table'));
+      var closure = new Method((closure) {
         closure
-          ..requiredParameters.add(Parameter((b) => b..name = 'table'))
-          ..body = Block((closureBody) {
+          ..requiredParameters.add(new Parameter((b) => b..name = 'table'))
+          ..body = new Block((closureBody) {
             var table = refer('table');
 
             List<String> dup = [];
             ctx.columns.forEach((name, col) {
-              // Skip custom-expression columns.
-              if (col.hasExpression) return;
-
               var key = ctx.buildContext.resolveFieldName(name);
 
-              if (dup.contains(key)) {
+              if (dup.contains(key))
                 return;
-              } else {
+              else {
                 // if (key != 'id' || autoIdAndDateFields == false) {
                 //   // Check for relationships that might duplicate
                 //   for (var rName in ctx.relations.keys) {
@@ -115,17 +111,15 @@ class MigrationGenerator extends GeneratorForAnnotation<Orm> {
               List<Expression> positional = [literal(key)];
               Map<String, Expression> named = {};
 
-              if (autoIdAndDateFields != false && name == 'id') {
+              if (autoIdAndDateFields != false && name == 'id')
                 methodName = 'serial';
-              }
 
               if (methodName == null) {
                 switch (col.type) {
                   case ColumnType.varChar:
                     methodName = 'varChar';
-                    if (col.length != null) {
+                    if (col.length != null)
                       named['length'] = literal(col.length);
-                    }
                     break;
                   case ColumnType.serial:
                     methodName = 'serial';
@@ -202,14 +196,13 @@ class MigrationGenerator extends GeneratorForAnnotation<Orm> {
                     // Definitely an analyzer issue.
                   }
                 } else {
-                  defaultExpr = CodeExpression(
-                    Code(dartObjectToString(defaultValue)),
+                  defaultExpr = new CodeExpression(
+                    new Code(dartObjectToString(defaultValue)),
                   );
                 }
 
-                if (defaultExpr != null) {
+                if (defaultExpr != null)
                   cascade.add(refer('defaultsTo').call([defaultExpr]));
-                }
               }
 
               if (col.indexType == IndexType.primaryKey ||
@@ -219,20 +212,20 @@ class MigrationGenerator extends GeneratorForAnnotation<Orm> {
                 cascade.add(refer('unique').call([]));
               }
 
-              if (col.isNullable != true) {
+              if (col.isNullable != true)
                 cascade.add(refer('notNull').call([]));
-              }
 
               if (cascade.isNotEmpty) {
-                var b = StringBuffer()..writeln(field.accept(DartEmitter()));
+                var b = new StringBuffer()
+                  ..writeln(field.accept(new DartEmitter()));
 
                 for (var ex in cascade) {
                   b
                     ..write('..')
-                    ..writeln(ex.accept(DartEmitter()));
+                    ..writeln(ex.accept(new DartEmitter()));
                 }
 
-                field = CodeExpression(Code(b.toString()));
+                field = new CodeExpression(new Code(b.toString()));
               }
 
               closureBody.addExpression(field);
@@ -266,16 +259,15 @@ class MigrationGenerator extends GeneratorForAnnotation<Orm> {
 
                 if (relationship.cascadeOnDelete != false &&
                     const [RelationshipType.hasOne, RelationshipType.belongsTo]
-                        .contains(relationship.type)) {
+                        .contains(relationship.type))
                   ref = ref.property('onDeleteCascade').call([]);
-                }
                 closureBody.addExpression(ref);
               }
             });
           });
       });
 
-      meth.body = Block((b) {
+      meth.body = new Block((b) {
         b.addExpression(_schema.property('create').call([
           literal(ctx.tableName),
           closure.closure,
@@ -285,12 +277,12 @@ class MigrationGenerator extends GeneratorForAnnotation<Orm> {
   }
 
   Method buildDownMigration(OrmBuildContext ctx) {
-    return Method((b) {
+    return new Method((b) {
       b
         ..name = 'down'
         ..annotations.add(refer('override'))
         ..requiredParameters.add(_schemaParam)
-        ..body = Block((b) {
+        ..body = new Block((b) {
           var named = <String, Expression>{};
 
           if (ctx.relations.values.any((r) =>

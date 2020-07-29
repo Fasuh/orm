@@ -78,7 +78,7 @@ class EmployeeQuery extends Query<Employee, EmployeeQueryWhere> {
   static Employee parseRow(List row) {
     if (row.every((x) => x == null)) return null;
     var model = Employee(
-        id: (row[0] as String),
+        id: row[0].toString(),
         createdAt: (row[1] as DateTime),
         updatedAt: (row[2] as DateTime),
         uniqueId: (row[3] as String),
@@ -96,7 +96,7 @@ class EmployeeQuery extends Query<Employee, EmployeeQueryWhere> {
 
 class EmployeeQueryWhere extends QueryWhere {
   EmployeeQueryWhere(EmployeeQuery query)
-      : id = StringSqlExpressionBuilder(query, 'id'),
+      : id = NumericSqlExpressionBuilder<int>(query, 'id'),
         createdAt = DateTimeSqlExpressionBuilder(query, 'created_at'),
         updatedAt = DateTimeSqlExpressionBuilder(query, 'updated_at'),
         uniqueId = StringSqlExpressionBuilder(query, 'unique_id'),
@@ -104,7 +104,7 @@ class EmployeeQueryWhere extends QueryWhere {
         lastName = StringSqlExpressionBuilder(query, 'last_name'),
         salary = NumericSqlExpressionBuilder<double>(query, 'salary');
 
-  final StringSqlExpressionBuilder id;
+  final NumericSqlExpressionBuilder<int> id;
 
   final DateTimeSqlExpressionBuilder createdAt;
 
@@ -166,7 +166,6 @@ class EmployeeQueryValues extends MapQueryValues {
 
   set salary(double value) => values['salary'] = value.toString();
   void copyFrom(Employee model) {
-    id = model.id;
     createdAt = model.createdAt;
     updatedAt = model.updatedAt;
     uniqueId = model.uniqueId;
