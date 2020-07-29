@@ -265,7 +265,7 @@ class MigrationGenerator extends GeneratorForAnnotation<Orm> {
                 ]);
 
                 if (relationship.cascadeOnDelete != false &&
-                    const [RelationshipType.hasOne, RelationshipType.belongsTo, RelationshipType.hasMany]
+                    const [RelationshipType.hasOne, RelationshipType.belongsTo]
                         .contains(relationship.type)) {
                   ref = ref.property('onDeleteCascade').call([]);
                 }
