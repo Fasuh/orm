@@ -257,9 +257,7 @@ class MigrationGenerator extends GeneratorForAnnotation<Orm> {
                   literal(relationship.foreignKey),
                 ]);
 
-                if (relationship.cascadeOnDelete != false &&
-                    const [RelationshipType.hasOne, RelationshipType.belongsTo, RelationshipType.hasMany]
-                        .contains(relationship.type))
+//                if (relationship.cascadeOnDelete != false) TODO - it doesnt work...
                   ref = ref.property('onDeleteCascade').call([]);
                 closureBody.addExpression(ref);
               }
