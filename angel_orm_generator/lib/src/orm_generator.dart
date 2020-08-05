@@ -493,6 +493,7 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
                         if (idx == -1) {
                           return out..add(model);
                         }
+                        return out;
                     })
                 '''); // TODO - change "m.id == model.id"
               }
