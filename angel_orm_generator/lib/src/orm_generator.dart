@@ -486,8 +486,8 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
                 var typeLiteral =
                     convertTypeReference(field.type).accept(DartEmitter());
                 merge.add('''
-                $name: $typeLiteral.from(l.$name ?? [])..addAll(model.$name ?? [])
-                  ..fold([], (out, model) {
+                $name: ($typeLiteral.from(l.$name ?? [])..addAll(model.$name ?? []))
+                  .fold([], (out, model) {
                         var idx = out.indexWhere((m) => m.id == model.id);
 
                         if (idx == -1) {
