@@ -488,13 +488,13 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
                 merge.add('''
                 $name: $typeLiteral.from(l.$name ?? [])..addAll(model.$name ?? [])
                   ..fold([], (out, model) {
-                        var idx = out.indexWhere((m) => m.$keyName == model.$keyName);
+                        var idx = out.indexWhere((m) => m.id == model.id);
 
                         if (idx == -1) {
                           return out..add(model);
                         }
                     })
-                ''');
+                '''); // TODO - change "m.id == model.id"
               }
             });
 
