@@ -135,7 +135,8 @@ class EmployeeQuery extends Query<Employee, EmployeeQueryWhere> {
     var elements = 8;
     if (row.length > elements && joinNames.contains('employers')) {
       model = model.copyWith(
-          employer: EmployerQuery().parseRow(row.skip(8).take(6).toList()));
+          employer:
+              EmployerQuery().parseRow(row.skip(elements).take(6).toList()));
       elements = elements + 6;
     }
     return model;
@@ -317,14 +318,15 @@ class EmployerQuery extends Query<Employer, EmployerQueryWhere> {
     var elements = 6;
     if (row.length > elements && joinNames.contains('employees')) {
       model = model.copyWith(
-          employes: [EmployeeQuery().parseRow(row.skip(6).take(8).toList())]
-              .where((x) => x != null)
-              .toList());
+          employes: [
+        EmployeeQuery().parseRow(row.skip(elements).take(8).toList())
+      ].where((x) => x != null).toList());
       elements = elements + 8;
     }
     if (row.length > elements && joinNames.contains('companies')) {
       model = model.copyWith(
-          company: CompanyQuery().parseRow(row.skip(14).take(7).toList()));
+          company:
+              CompanyQuery().parseRow(row.skip(elements).take(7).toList()));
       elements = elements + 7;
     }
     return model;
@@ -575,7 +577,8 @@ class CompanyQuery extends Query<Company, CompanyQueryWhere> {
     var elements = 7;
     if (row.length > elements && joinNames.contains('employers')) {
       model = model.copyWith(
-          employer: EmployerQuery().parseRow(row.skip(7).take(6).toList()));
+          employer:
+              EmployerQuery().parseRow(row.skip(elements).take(6).toList()));
       elements = elements + 6;
     }
     return model;

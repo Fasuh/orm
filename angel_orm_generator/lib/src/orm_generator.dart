@@ -214,7 +214,7 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
               var foreign = relation.foreign;
               var skipToList = refer('row')
                   .property('skip')
-                  .call([literalNum(i)])
+                  .call([refer('elements')])
                   .property('take')
                   .call([literalNum(relation.foreign.effectiveFields.length)])
                   .property('toList')
