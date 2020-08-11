@@ -9,7 +9,10 @@ dependencies:
   analyzer: ">=0.27.1 <2.0.0"
   angel_model: ^1.0.0
   angel_serialize: ^2.0.0
-  angel_orm: ^2.0.0-dev
+  angel_orm:
+    git:
+      url: https://github.com/Fasuh/orm.git
+      path: angel_orm
   angel_serialize_generator: ^2.0.0
   build: ">=0.12.0 <2.0.0"
   build_config: ">=0.3.0 <0.5.0"
@@ -24,7 +27,7 @@ dev_dependencies:
   angel_framework: ^2.0.0-alpha
   angel_migration:
     git:
-      url: https://github.com/angel-dart/migration
+      url: https://github.com/Fasuh/orm.git
       path: angel_migration
   #angel_test: ^1.0.0
   build_runner: ^1.0.0
