@@ -18,8 +18,8 @@ class EmployeeMigration extends Migration {
       table.varChar('last_name');
       table.declare('salary', ColumnType('decimal'));
       table
-          .declare('employeer_id', ColumnType('serial'))
-          .references('employeers', 'id')
+          .declare('employer_id', ColumnType('serial'))
+          .references('employers', 'id')
           .onDeleteCascade();
     });
   }
@@ -30,10 +30,10 @@ class EmployeeMigration extends Migration {
   }
 }
 
-class EmployeerMigration extends Migration {
+class EmployerMigration extends Migration {
   @override
   up(Schema schema) {
-    schema.create('employeers', (table) {
+    schema.create('employers', (table) {
       table.serial('id')..primaryKey();
       table.timeStamp('created_at');
       table.timeStamp('updated_at');
@@ -45,7 +45,7 @@ class EmployeerMigration extends Migration {
 
   @override
   down(Schema schema) {
-    schema.drop('employeers', cascade: true);
+    schema.drop('employers', cascade: true);
   }
 }
 
@@ -85,7 +85,7 @@ class EmployeeQuery extends Query<Employee, EmployeeQueryWhere> {
       'first_name',
       'last_name',
       'salary',
-      'employeer_id'
+      'employer_id'
     ];
   }
 
@@ -109,9 +109,9 @@ class EmployeeQuery extends Query<Employee, EmployeeQueryWhere> {
         firstName: (row[4] as String),
         lastName: (row[5] as String),
         salary: double.tryParse(row[6].toString()));
-    if (row.length > 8) {
+    if (row.length > 8 && joins) {
       model = model.copyWith(
-          employeer: EmployeerQuery.parseRow(row.skip(8).take(6).toList()));
+          employer: EmployerQuery.parseRow(row.skip(8).take(6).toList()));
     }
     return model;
   }
@@ -121,8 +121,8 @@ class EmployeeQuery extends Query<Employee, EmployeeQueryWhere> {
     return parseRow(row);
   }
 
-  employeerJoin() {
-    join('employeers', 'employeer_id', 'id', additionalFields: const [
+  joinEmployer() {
+    join('employers', 'employer_id', 'id', additionalFields: const [
       'id',
       'created_at',
       'updated_at',
@@ -142,7 +142,7 @@ class EmployeeQueryWhere extends QueryWhere {
         firstName = StringSqlExpressionBuilder(query, 'first_name'),
         lastName = StringSqlExpressionBuilder(query, 'last_name'),
         salary = NumericSqlExpressionBuilder<double>(query, 'salary'),
-        employeerId = NumericSqlExpressionBuilder<int>(query, 'employeer_id');
+        employerId = NumericSqlExpressionBuilder<int>(query, 'employer_id');
 
   final NumericSqlExpressionBuilder<int> id;
 
@@ -158,7 +158,7 @@ class EmployeeQueryWhere extends QueryWhere {
 
   final NumericSqlExpressionBuilder<double> salary;
 
-  final NumericSqlExpressionBuilder<int> employeerId;
+  final NumericSqlExpressionBuilder<int> employerId;
 
   @override
   get expressionBuilders {
@@ -170,7 +170,7 @@ class EmployeeQueryWhere extends QueryWhere {
       firstName,
       lastName,
       salary,
-      employeerId
+      employerId
     ];
   }
 }
@@ -216,11 +216,11 @@ class EmployeeQueryValues extends MapQueryValues {
   }
 
   set salary(double value) => values['salary'] = value.toString();
-  int get employeerId {
-    return (values['employeer_id'] as int);
+  int get employerId {
+    return (values['employer_id'] as int);
   }
 
-  set employeerId(int value) => values['employeer_id'] = value;
+  set employerId(int value) => values['employer_id'] = value;
   void copyFrom(Employee model) {
     createdAt = model.createdAt;
     updatedAt = model.updatedAt;
@@ -228,23 +228,23 @@ class EmployeeQueryValues extends MapQueryValues {
     firstName = model.firstName;
     lastName = model.lastName;
     salary = model.salary;
-    if (model.employeer != null) {
-      values['employeer_id'] = model.employeer.id;
+    if (model.employer != null) {
+      values['employer_id'] = model.employer.id;
     }
   }
 }
 
-class EmployeerQuery extends Query<Employeer, EmployeerQueryWhere> {
-  EmployeerQuery({Set<String> trampoline}) {
+class EmployerQuery extends Query<Employer, EmployerQueryWhere> {
+  EmployerQuery({Set<String> trampoline}) {
     trampoline ??= Set();
     trampoline.add(tableName);
-    _where = EmployeerQueryWhere(this);
+    _where = EmployerQueryWhere(this);
   }
 
   @override
-  final EmployeerQueryValues values = EmployeerQueryValues();
+  final EmployerQueryValues values = EmployerQueryValues();
 
-  EmployeerQueryWhere _where;
+  EmployerQueryWhere _where;
 
   @override
   get casts {
@@ -253,7 +253,7 @@ class EmployeerQuery extends Query<Employeer, EmployeerQueryWhere> {
 
   @override
   get tableName {
-    return 'employeers';
+    return 'employers';
   }
 
   @override
@@ -269,18 +269,18 @@ class EmployeerQuery extends Query<Employeer, EmployeerQueryWhere> {
   }
 
   @override
-  EmployeerQueryWhere get where {
+  EmployerQueryWhere get where {
     return _where;
   }
 
   @override
-  EmployeerQueryWhere newWhereClause() {
-    return EmployeerQueryWhere(this);
+  EmployerQueryWhere newWhereClause() {
+    return EmployerQueryWhere(this);
   }
 
-  static Employeer parseRow(List row) {
+  static Employer parseRow(List row) {
     if (row.every((x) => x == null)) return null;
-    var model = Employeer(
+    var model = Employer(
         id: row[0].toString(),
         createdAt: (row[1] as DateTime),
         updatedAt: (row[2] as DateTime),
@@ -289,7 +289,7 @@ class EmployeerQuery extends Query<Employeer, EmployeerQueryWhere> {
         lastName: (row[5] as String));
     if (row.length > 6) {
       model = model.copyWith(
-          employees: [EmployeeQuery.parseRow(row.skip(6).take(8).toList())]
+          employes: [EmployeeQuery.parseRow(row.skip(6).take(8).toList())]
               .where((x) => x != null)
               .toList());
     }
@@ -301,8 +301,8 @@ class EmployeerQuery extends Query<Employeer, EmployeerQueryWhere> {
     return parseRow(row);
   }
 
-  employeesJoin() {
-    join('employees', 'id', 'employeer_id', additionalFields: const [
+  joinEmployes() {
+    join('employees', 'id', 'employer_id', additionalFields: const [
       'id',
       'created_at',
       'updated_at',
@@ -310,14 +310,14 @@ class EmployeerQuery extends Query<Employeer, EmployeerQueryWhere> {
       'first_name',
       'last_name',
       'salary',
-      'employeer_id'
+      'employer_id'
     ]);
   }
 
   @override
   get(QueryExecutor executor) {
     return super.get(executor).then((result) {
-      return result.fold<List<Employeer>>([], (out, model) {
+      return result.fold<List<Employer>>([], (out, model) {
         var idx = out.indexWhere((m) => m.id == model.id);
 
         if (idx == -1) {
@@ -326,8 +326,8 @@ class EmployeerQuery extends Query<Employeer, EmployeerQueryWhere> {
           var l = out[idx];
           return out
             ..[idx] = l.copyWith(
-                employees: (List<_Employee>.from(l.employees ?? [])
-                      ..addAll(model.employees ?? []))
+                employes: (List<_Employee>.from(l.employes ?? [])
+                      ..addAll(model.employes ?? []))
                     .fold([], (out, model) {
               var idx = out.indexWhere((m) => m.id == model.id);
 
@@ -344,7 +344,7 @@ class EmployeerQuery extends Query<Employeer, EmployeerQueryWhere> {
   @override
   update(QueryExecutor executor) {
     return super.update(executor).then((result) {
-      return result.fold<List<Employeer>>([], (out, model) {
+      return result.fold<List<Employer>>([], (out, model) {
         var idx = out.indexWhere((m) => m.id == model.id);
 
         if (idx == -1) {
@@ -353,8 +353,8 @@ class EmployeerQuery extends Query<Employeer, EmployeerQueryWhere> {
           var l = out[idx];
           return out
             ..[idx] = l.copyWith(
-                employees: (List<_Employee>.from(l.employees ?? [])
-                      ..addAll(model.employees ?? []))
+                employes: (List<_Employee>.from(l.employes ?? [])
+                      ..addAll(model.employes ?? []))
                     .fold([], (out, model) {
               var idx = out.indexWhere((m) => m.id == model.id);
 
@@ -371,7 +371,7 @@ class EmployeerQuery extends Query<Employeer, EmployeerQueryWhere> {
   @override
   delete(QueryExecutor executor) {
     return super.delete(executor).then((result) {
-      return result.fold<List<Employeer>>([], (out, model) {
+      return result.fold<List<Employer>>([], (out, model) {
         var idx = out.indexWhere((m) => m.id == model.id);
 
         if (idx == -1) {
@@ -380,8 +380,8 @@ class EmployeerQuery extends Query<Employeer, EmployeerQueryWhere> {
           var l = out[idx];
           return out
             ..[idx] = l.copyWith(
-                employees: (List<_Employee>.from(l.employees ?? [])
-                      ..addAll(model.employees ?? []))
+                employes: (List<_Employee>.from(l.employes ?? [])
+                      ..addAll(model.employes ?? []))
                     .fold([], (out, model) {
               var idx = out.indexWhere((m) => m.id == model.id);
 
@@ -396,8 +396,8 @@ class EmployeerQuery extends Query<Employeer, EmployeerQueryWhere> {
   }
 }
 
-class EmployeerQueryWhere extends QueryWhere {
-  EmployeerQueryWhere(EmployeerQuery query)
+class EmployerQueryWhere extends QueryWhere {
+  EmployerQueryWhere(EmployerQuery query)
       : id = NumericSqlExpressionBuilder<int>(query, 'id'),
         createdAt = DateTimeSqlExpressionBuilder(query, 'created_at'),
         updatedAt = DateTimeSqlExpressionBuilder(query, 'updated_at'),
@@ -423,7 +423,7 @@ class EmployeerQueryWhere extends QueryWhere {
   }
 }
 
-class EmployeerQueryValues extends MapQueryValues {
+class EmployerQueryValues extends MapQueryValues {
   @override
   get casts {
     return {};
@@ -459,7 +459,7 @@ class EmployeerQueryValues extends MapQueryValues {
   }
 
   set lastName(String value) => values['last_name'] = value;
-  void copyFrom(Employeer model) {
+  void copyFrom(Employer model) {
     createdAt = model.createdAt;
     updatedAt = model.updatedAt;
     uniqueId = model.uniqueId;
@@ -482,7 +482,7 @@ class Employee extends _Employee {
       this.firstName,
       this.lastName,
       this.salary,
-      this.employeer});
+      this.employer});
 
   /// A unique identifier corresponding to this item.
   @override
@@ -509,7 +509,7 @@ class Employee extends _Employee {
   final double salary;
 
   @override
-  final _Employeer employeer;
+  final _Employer employer;
 
   Employee copyWith(
       {String id,
@@ -519,7 +519,7 @@ class Employee extends _Employee {
       String firstName,
       String lastName,
       double salary,
-      _Employeer employeer}) {
+      _Employer employer}) {
     return Employee(
         id: id ?? this.id,
         createdAt: createdAt ?? this.createdAt,
@@ -528,7 +528,7 @@ class Employee extends _Employee {
         firstName: firstName ?? this.firstName,
         lastName: lastName ?? this.lastName,
         salary: salary ?? this.salary,
-        employeer: employeer ?? this.employeer);
+        employer: employer ?? this.employer);
   }
 
   bool operator ==(other) {
@@ -540,7 +540,7 @@ class Employee extends _Employee {
         other.firstName == firstName &&
         other.lastName == lastName &&
         other.salary == salary &&
-        other.employeer == employeer;
+        other.employer == employer;
   }
 
   @override
@@ -553,13 +553,13 @@ class Employee extends _Employee {
       firstName,
       lastName,
       salary,
-      employeer
+      employer
     ]);
   }
 
   @override
   String toString() {
-    return "Employee(id=$id, createdAt=$createdAt, updatedAt=$updatedAt, uniqueId=$uniqueId, firstName=$firstName, lastName=$lastName, salary=$salary, employeer=$employeer)";
+    return "Employee(id=$id, createdAt=$createdAt, updatedAt=$updatedAt, uniqueId=$uniqueId, firstName=$firstName, lastName=$lastName, salary=$salary, employer=$employer)";
   }
 
   Map<String, dynamic> toJson() {
@@ -568,16 +568,16 @@ class Employee extends _Employee {
 }
 
 @generatedSerializable
-class Employeer extends _Employeer {
-  Employeer(
+class Employer extends _Employer {
+  Employer(
       {this.id,
       this.createdAt,
       this.updatedAt,
       this.uniqueId,
       this.firstName,
       this.lastName,
-      List<_Employee> employees})
-      : this.employees = List.unmodifiable(employees ?? []);
+      List<_Employee> employes})
+      : this.employes = List.unmodifiable(employes ?? []);
 
   /// A unique identifier corresponding to this item.
   @override
@@ -601,28 +601,28 @@ class Employeer extends _Employeer {
   final String lastName;
 
   @override
-  final List<_Employee> employees;
+  final List<_Employee> employes;
 
-  Employeer copyWith(
+  Employer copyWith(
       {String id,
       DateTime createdAt,
       DateTime updatedAt,
       String uniqueId,
       String firstName,
       String lastName,
-      List<_Employee> employees}) {
-    return Employeer(
+      List<_Employee> employes}) {
+    return Employer(
         id: id ?? this.id,
         createdAt: createdAt ?? this.createdAt,
         updatedAt: updatedAt ?? this.updatedAt,
         uniqueId: uniqueId ?? this.uniqueId,
         firstName: firstName ?? this.firstName,
         lastName: lastName ?? this.lastName,
-        employees: employees ?? this.employees);
+        employes: employes ?? this.employes);
   }
 
   bool operator ==(other) {
-    return other is _Employeer &&
+    return other is _Employer &&
         other.id == id &&
         other.createdAt == createdAt &&
         other.updatedAt == updatedAt &&
@@ -630,22 +630,22 @@ class Employeer extends _Employeer {
         other.firstName == firstName &&
         other.lastName == lastName &&
         ListEquality<_Employee>(DefaultEquality<_Employee>())
-            .equals(other.employees, employees);
+            .equals(other.employes, employes);
   }
 
   @override
   int get hashCode {
     return hashObjects(
-        [id, createdAt, updatedAt, uniqueId, firstName, lastName, employees]);
+        [id, createdAt, updatedAt, uniqueId, firstName, lastName, employes]);
   }
 
   @override
   String toString() {
-    return "Employeer(id=$id, createdAt=$createdAt, updatedAt=$updatedAt, uniqueId=$uniqueId, firstName=$firstName, lastName=$lastName, employees=$employees)";
+    return "Employer(id=$id, createdAt=$createdAt, updatedAt=$updatedAt, uniqueId=$uniqueId, firstName=$firstName, lastName=$lastName, employes=$employes)";
   }
 
   Map<String, dynamic> toJson() {
-    return EmployeerSerializer.toMap(this);
+    return EmployerSerializer.toMap(this);
   }
 }
 
@@ -693,8 +693,8 @@ class EmployeeSerializer extends Codec<Employee, Map> {
         firstName: map['first_name'] as String,
         lastName: map['last_name'] as String,
         salary: map['salary'] as double,
-        employeer: map['employeer'] != null
-            ? EmployeerSerializer.fromMap(map['employeer'] as Map)
+        employer: map['employer'] != null
+            ? EmployerSerializer.fromMap(map['employer'] as Map)
             : null);
   }
 
@@ -710,7 +710,7 @@ class EmployeeSerializer extends Codec<Employee, Map> {
       'first_name': model.firstName,
       'last_name': model.lastName,
       'salary': model.salary,
-      'employeer': EmployeerSerializer.toMap(model.employeer)
+      'employer': EmployerSerializer.toMap(model.employer)
     };
   }
 }
@@ -724,7 +724,7 @@ abstract class EmployeeFields {
     firstName,
     lastName,
     salary,
-    employeer
+    employer
   ];
 
   static const String id = 'id';
@@ -741,34 +741,34 @@ abstract class EmployeeFields {
 
   static const String salary = 'salary';
 
-  static const String employeer = 'employeer';
+  static const String employer = 'employer';
 }
 
-const EmployeerSerializer employeerSerializer = EmployeerSerializer();
+const EmployerSerializer employerSerializer = EmployerSerializer();
 
-class EmployeerEncoder extends Converter<Employeer, Map> {
-  const EmployeerEncoder();
+class EmployerEncoder extends Converter<Employer, Map> {
+  const EmployerEncoder();
 
   @override
-  Map convert(Employeer model) => EmployeerSerializer.toMap(model);
+  Map convert(Employer model) => EmployerSerializer.toMap(model);
 }
 
-class EmployeerDecoder extends Converter<Map, Employeer> {
-  const EmployeerDecoder();
+class EmployerDecoder extends Converter<Map, Employer> {
+  const EmployerDecoder();
 
   @override
-  Employeer convert(Map map) => EmployeerSerializer.fromMap(map);
+  Employer convert(Map map) => EmployerSerializer.fromMap(map);
 }
 
-class EmployeerSerializer extends Codec<Employeer, Map> {
-  const EmployeerSerializer();
+class EmployerSerializer extends Codec<Employer, Map> {
+  const EmployerSerializer();
 
   @override
-  get encoder => const EmployeerEncoder();
+  get encoder => const EmployerEncoder();
   @override
-  get decoder => const EmployeerDecoder();
-  static Employeer fromMap(Map map) {
-    return Employeer(
+  get decoder => const EmployerDecoder();
+  static Employer fromMap(Map map) {
+    return Employer(
         id: map['id'] as String,
         createdAt: map['created_at'] != null
             ? (map['created_at'] is DateTime
@@ -783,14 +783,13 @@ class EmployeerSerializer extends Codec<Employeer, Map> {
         uniqueId: map['unique_id'] as String,
         firstName: map['first_name'] as String,
         lastName: map['last_name'] as String,
-        employees: map['employees'] is Iterable
-            ? List.unmodifiable(
-                ((map['employees'] as Iterable).whereType<Map>())
-                    .map(EmployeeSerializer.fromMap))
+        employes: map['employes'] is Iterable
+            ? List.unmodifiable(((map['employes'] as Iterable).whereType<Map>())
+                .map(EmployeeSerializer.fromMap))
             : null);
   }
 
-  static Map<String, dynamic> toMap(_Employeer model) {
+  static Map<String, dynamic> toMap(_Employer model) {
     if (model == null) {
       return null;
     }
@@ -801,13 +800,13 @@ class EmployeerSerializer extends Codec<Employeer, Map> {
       'unique_id': model.uniqueId,
       'first_name': model.firstName,
       'last_name': model.lastName,
-      'employees':
-          model.employees?.map((m) => EmployeeSerializer.toMap(m))?.toList()
+      'employes':
+          model.employes?.map((m) => EmployeeSerializer.toMap(m))?.toList()
     };
   }
 }
 
-abstract class EmployeerFields {
+abstract class EmployerFields {
   static const List<String> allFields = <String>[
     id,
     createdAt,
@@ -815,7 +814,7 @@ abstract class EmployeerFields {
     uniqueId,
     firstName,
     lastName,
-    employees
+    employes
   ];
 
   static const String id = 'id';
@@ -830,5 +829,5 @@ abstract class EmployeerFields {
 
   static const String lastName = 'last_name';
 
-  static const String employees = 'employees';
+  static const String employes = 'employes';
 }

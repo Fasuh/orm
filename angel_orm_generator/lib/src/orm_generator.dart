@@ -233,7 +233,7 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
               var block = new Block(
                   (b) => b.addExpression(refer('model').assign(expr)));
               var blockStr = block.accept(new DartEmitter());
-              var ifStr = 'if (row.length > $i) { $blockStr }';
+              var ifStr = 'if (row.length > $i && ) { $blockStr }';
               b.statements.add(new Code(ifStr));
               i += relation.foreign.effectiveFields.length;
             });
@@ -261,7 +261,7 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
             relation.type == RelationshipType.hasMany) {
           clazz.methods.add(Method((m) {
             m
-              ..name = '${fieldName}Join'
+              ..name = 'join${fieldName[0].toUpperCase()}${fieldName.substring(1)}'
               ..body = Block((b) {
                 var joinArgs = [relation.foreignTable, relation.localKey, relation.foreignKey]
                     .map(literalString)

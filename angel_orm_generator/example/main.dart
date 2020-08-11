@@ -51,12 +51,12 @@ abstract class _Employee extends Model {
   double get salary;
 
   @belongsTo
-  _Employeer get employeer;
+  _Employer get employer;
 }
 
 @orm
 @serializable
-abstract class _Employeer extends Model {
+abstract class _Employer extends Model {
   String get firstName;
 
   String get lastName;
@@ -65,5 +65,5 @@ abstract class _Employeer extends Model {
   String uniqueId;
 
   @hasMany
-  List<_Employee> get employees;
+  List<_Employee> get employes;
 }
