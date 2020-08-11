@@ -49,4 +49,21 @@ abstract class _Employee extends Model {
   String uniqueId;
 
   double get salary;
+
+  @belongsTo
+  _Employeer get employeer;
+}
+
+@orm
+@serializable
+abstract class _Employeer extends Model {
+  String get firstName;
+
+  String get lastName;
+
+  @Column(indexType: IndexType.unique)
+  String uniqueId;
+
+  @hasMany
+  List<_Employee> get employees;
 }

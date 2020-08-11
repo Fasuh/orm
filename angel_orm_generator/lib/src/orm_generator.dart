@@ -261,7 +261,7 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
             relation.type == RelationshipType.hasMany) {
           clazz.methods.add(Method((m) {
             m
-              ..name = 'join${fieldName}'
+              ..name = '${fieldName}Join'
               ..body = Block((b) {
                 var joinArgs = [relation.foreignTable, relation.localKey, relation.foreignKey]
                     .map(literalString)
@@ -275,7 +275,6 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
                 b.addExpression(refer('join').call(joinArgs, {
                   'additionalFields':
                   literalConstList(additionalFields.toList()),
-                  'trampoline': refer('trampoline'),
                 }));
               });
           }));
