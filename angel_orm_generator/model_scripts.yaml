@@ -1,0 +1,6 @@
+clean: pub run build_runner clean
+build: pub run build_runner build --delete-conflicting-outputs
+watch: pub run build_runner watch --delete-conflicting-outputs
+rebuild:
+  - $clean
+  - $build

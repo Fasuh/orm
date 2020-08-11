@@ -4,7 +4,7 @@ import 'package:analyzer/dart/element/type.dart';
 import 'package:angel_orm/angel_orm.dart';
 import 'package:angel_serialize_generator/angel_serialize_generator.dart';
 import 'package:build/build.dart';
-import 'package:code_builder/code_builder.dart' hide LibraryBuilder;
+import 'package:code_builder/code_builder.dart';
 import 'package:source_gen/source_gen.dart';
 import 'orm_build_context.dart';
 
@@ -265,15 +265,17 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
             relation.type == RelationshipType.hasOne ||
             relation.type == RelationshipType.hasMany) {
           clazz.methods.add(Method((m) {
+            final className = '${fieldName[0].toUpperCase()}${fieldName.substring(1)}';
             m
-              ..name = 'join${fieldName[0].toUpperCase()}${fieldName.substring(1)}'
+              ..name = 'join$className'
               ..body = Block((b) {
+                final parser = MethodBuilder()
+                  ..lambda = true;
                 b.statements
-                    .add(new Code('if (joins.any((a) => a.name == \'${relation.foreignTable}\')) return null;'));
-                var parsed = refer(
-                    '${relation.foreign.buildContext.modelClassNameRecase.pascalCase}Query')
-                    .newInstance([]);
-                b.addExpression(refer('QueryRelation').newInstance([literalString(relation.foreignTable), literalNum(relation.foreign.effectiveFields.length), parsed]).assignVar('join'));
+                    .add(Code('if (joins.any((a) => a.name == \'${relation.foreignTable}\')) return null;'));
+                b.addExpression(refer('QueryRelation').newInstance([literalString(relation.foreignTable), literalNum(relation.foreign.effectiveFields.length), CodeExpression(Code(
+                  '<$className>(list) => ${className}Query().parseRow(list)'
+                ))]).assignVar('join'));
 
                 var joinArgs = [relation.foreignTable, relation.localKey, relation.foreignKey]
                     .map(literalString)

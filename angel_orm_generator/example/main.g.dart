@@ -149,7 +149,8 @@ class EmployeeQuery extends Query<Employee, EmployeeQueryWhere> {
 
   joinEmployer() {
     if (joins.any((a) => a.name == 'employers')) return null;
-    var join = QueryRelation('employers', 6, EmployerQuery());
+    var join = QueryRelation(
+        'employers', 6, <Employer>(list) => EmployerQuery().parseRow(list));
     leftJoin('employers', 'employer_id', 'id', additionalFields: const [
       'id',
       'created_at',
@@ -340,7 +341,8 @@ class EmployerQuery extends Query<Employer, EmployerQueryWhere> {
 
   joinEmployes() {
     if (joins.any((a) => a.name == 'employees')) return null;
-    var join = QueryRelation('employees', 8, EmployeeQuery());
+    var join = QueryRelation(
+        'employees', 8, <Employes>(list) => EmployesQuery().parseRow(list));
     leftJoin('employees', 'id', 'employer_id', additionalFields: const [
       'id',
       'created_at',
@@ -356,7 +358,8 @@ class EmployerQuery extends Query<Employer, EmployerQueryWhere> {
 
   joinCompany() {
     if (joins.any((a) => a.name == 'companies')) return null;
-    var join = QueryRelation('companies', 7, CompanyQuery());
+    var join = QueryRelation(
+        'companies', 7, <Company>(list) => CompanyQuery().parseRow(list));
     leftJoin('companies', 'id', 'employer_id', additionalFields: const [
       'id',
       'created_at',
@@ -594,7 +597,8 @@ class CompanyQuery extends Query<Company, CompanyQueryWhere> {
 
   joinEmployer() {
     if (joins.any((a) => a.name == 'employers')) return null;
-    var join = QueryRelation('employers', 6, EmployerQuery());
+    var join = QueryRelation(
+        'employers', 6, <Employer>(list) => EmployerQuery().parseRow(list));
     leftJoin('employers', 'employer_id', 'id', additionalFields: const [
       'id',
       'created_at',
