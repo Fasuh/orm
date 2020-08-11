@@ -147,7 +147,7 @@ class EmployeeQuery extends Query<Employee, EmployeeQueryWhere> {
   }
 
   joinEmployer() {
-    join('employers', 'employer_id', 'id', additionalFields: const [
+    leftJoin('employers', 'employer_id', 'id', additionalFields: const [
       'id',
       'created_at',
       'updated_at',
@@ -334,7 +334,7 @@ class EmployerQuery extends Query<Employer, EmployerQueryWhere> {
   }
 
   joinEmployes() {
-    join('employees', 'id', 'employer_id', additionalFields: const [
+    leftJoin('employees', 'id', 'employer_id', additionalFields: const [
       'id',
       'created_at',
       'updated_at',
@@ -347,7 +347,7 @@ class EmployerQuery extends Query<Employer, EmployerQueryWhere> {
   }
 
   joinCompany() {
-    join('companies', 'id', 'employer_id', additionalFields: const [
+    leftJoin('companies', 'id', 'employer_id', additionalFields: const [
       'id',
       'created_at',
       'updated_at',
@@ -581,7 +581,7 @@ class CompanyQuery extends Query<Company, CompanyQueryWhere> {
   }
 
   joinEmployer() {
-    join('employers', 'employer_id', 'id', additionalFields: const [
+    leftJoin('employers', 'employer_id', 'id', additionalFields: const [
       'id',
       'created_at',
       'updated_at',

@@ -277,7 +277,7 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
                     .map((f) => literalString(relation.foreign.buildContext
                     .resolveFieldName(f.name)));
 
-                b.addExpression(refer('join').call(joinArgs, {
+                b.addExpression(refer('leftJoin').call(joinArgs, {
                   'additionalFields':
                   literalConstList(additionalFields.toList()),
                 }));
