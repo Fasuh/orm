@@ -254,6 +254,34 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
           });
       }));
 
+      ctx.relations.forEach((fieldName, relation) {
+        //var name = ctx.buildContext.resolveFieldName(fieldName);
+        if (relation.type == RelationshipType.belongsTo ||
+            relation.type == RelationshipType.hasOne ||
+            relation.type == RelationshipType.hasMany) {
+          clazz.methods.add(Method((m) {
+            m
+              ..name = 'join${fieldName}'
+              ..body = Block((b) {
+                var joinArgs = [relation.foreignTable, relation.localKey, relation.foreignKey]
+                    .map(literalString)
+                    .toList();
+
+                var additionalFields = relation.foreign.effectiveFields
+                // .where((f) => f.name != 'id' || !isSpecialId(ctx, f))
+                    .map((f) => literalString(relation.foreign.buildContext
+                    .resolveFieldName(f.name)));
+
+                b.addExpression(refer('join').call(joinArgs, {
+                  'additionalFields':
+                  literalConstList(additionalFields.toList()),
+                  'trampoline': refer('trampoline'),
+                }));
+              });
+          }));
+        }
+      });
+
       // If there are any relations, we need some overrides.
       clazz.constructors.add(new Constructor((b) {
         b
