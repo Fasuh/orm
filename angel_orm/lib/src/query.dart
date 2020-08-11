@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'package:angel_orm/src/query_relation.dart';
+
 import 'annotations.dart';
 import 'join_builder.dart';
 import 'order_by.dart';
@@ -9,8 +11,8 @@ import 'query_where.dart';
 
 /// A SQL `SELECT` query builder.
 abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
-  final List<JoinBuilder> joins = [];
-  final Set<String> joinNames = Set<String>();
+  final List<JoinBuilder> _joins = [];
+  final Set<QueryRelation> joins = Set<QueryRelation>();
   final Map<String, int> _names = {};
   final List<OrderBy> _orderBy = [];
 
@@ -117,7 +119,7 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
   }
 
   String _joinAlias(Set<String> trampoline) {
-    int i = joins.length;
+    int i = _joins.length;
 
     while (true) {
       var a = 'a$i';
@@ -169,7 +171,7 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
           tableName.aliases[field] = '${alias}_$field';
         }
       }
-      joins.add(JoinBuilder(type, this, to, localKey, foreignKey,
+      _joins.add(JoinBuilder(type, this, to, localKey, foreignKey,
           op: op,
           alias: alias,
           additionalFields: additionalFields,
@@ -233,7 +235,7 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
       return null;
     }
 
-    includeTableName = includeTableName || joins.isNotEmpty;
+    includeTableName = includeTableName || _joins.isNotEmpty;
     var b = StringBuffer(preamble ?? 'SELECT');
     b.write(' ');
     List<String> f;
@@ -271,7 +273,7 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
         }
         return ss;
       }));
-      joins.forEach((j) {
+      _joins.forEach((j) {
         var c = compiledJoins[j] = j.compile(trampoline);
         if (c != null) {
           var additional = j.additionalFields.map(j.nameFor).toList();
@@ -291,7 +293,7 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
     // No joins if it's not a select.
     if (preamble == null) {
       if (_crossJoin != null) b.write(' CROSS JOIN $_crossJoin');
-      for (var join in joins) {
+      for (var join in _joins) {
         var c = compiledJoins[join];
         if (c != null) b.write(' $c');
       }
@@ -318,7 +320,7 @@ abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
   Future<List<T>> delete(QueryExecutor executor) {
     var sql = compile(Set(), preamble: 'DELETE', withFields: false);
 
-    if (joins.isEmpty) {
+    if (_joins.isEmpty) {
       return executor
           .query(tableName, sql, substitutionValues,
               fields.map(adornWithTableName).toList())
