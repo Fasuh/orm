@@ -6,13 +6,18 @@ homepage: https://github.com/angel-dart/orm
 environment:
   sdk: '>=2.0.0 <3.0.0'
 dependencies:
-  angel_orm: ^2.1.0-beta
+  angel_orm:
+    git:
+      url: https://github.com/Fasuh/orm.git
+      path: angel_orm
   logging: ^0.11.0
   pool: ^1.0.0
   postgres: ^2.1.1
 dev_dependencies:
   angel_orm_test:
-    path: ../angel_orm_test
+    git:
+      url: https://github.com/Fasuh/orm.git
+      path: angel_orm_test
   pretty_logging: ^1.0.0
   test: ^1.0.0
 # dependency_overrides:
