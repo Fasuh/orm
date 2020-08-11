@@ -162,7 +162,6 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
       clazz.methods.add(new Method((m) {
         m
           ..name = 'parseRow'
-          ..static = true
           ..returns = ctx.buildContext.modelClassType
           ..requiredParameters.add(new Parameter((b) => b
             ..name = 'row'
@@ -204,6 +203,8 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
             b.addExpression(ctx.buildContext.modelClassType
                 .newInstance([], args).assignVar('model'));
 
+            b.addExpression(refer(i.toString()).assignVar('elements'));
+
             ctx.relations.forEach((name, relation) {
               if (!const [
                 RelationshipType.hasOne,
@@ -220,6 +221,7 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
                   .call([]);
               var parsed = refer(
                       '${foreign.buildContext.modelClassNameRecase.pascalCase}Query')
+                  .newInstance([])
                   .property('parseRow')
                   .call([skipToList]);
               if (relation.type == RelationshipType.hasMany) {
@@ -231,9 +233,12 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
               var expr =
                   refer('model').property('copyWith').call([], {name: parsed});
               var block = new Block(
-                  (b) => b.addExpression(refer('model').assign(expr)));
+                  (b) => b
+                    ..addExpression(refer('model').assign(expr))
+                    ..addExpression(refer('elements').assign(refer('elements')).operatorAdd(refer(relation.foreign.effectiveFields.length.toString())))
+              );
               var blockStr = block.accept(new DartEmitter());
-              var ifStr = 'if (row.length > $i && ) { $blockStr }';
+              var ifStr = 'if (row.length > elements && joins.contains(\'${relation.foreign.tableName}\')) { $blockStr }';
               b.statements.add(new Code(ifStr));
               i += relation.foreign.effectiveFields.length;
             });

@@ -33,8 +33,8 @@ class _FakeExecutor extends QueryExecutor {
   }
 
   @override
-  Future<T> transaction<T>(FutureOr<T> Function() f) {
-    throw new UnsupportedError('Transactions are not supported.');
+  Future<T> transaction<T>(FutureOr<T> Function(QueryExecutor) f) {
+    throw UnimplementedError();
   }
 }
 
@@ -66,4 +66,21 @@ abstract class _Employer extends Model {
 
   @hasMany
   List<_Employee> get employes;
+
+  @hasOne
+  _Company get company;
+}
+
+@orm
+@serializable
+abstract class _Company extends Model {
+  String get firstName;
+
+  String get lastName;
+
+  @Column(indexType: IndexType.unique)
+  String uniqueId;
+
+  @belongsTo
+  _Employer get employer;
 }
