@@ -10,6 +10,7 @@ import 'query_where.dart';
 /// A SQL `SELECT` query builder.
 abstract class Query<T, Where extends QueryWhere> extends QueryBase<T> {
   final List<JoinBuilder> joins = [];
+  final Set<String> joinNames = Set<String>();
   final Map<String, int> _names = {};
   final List<OrderBy> _orderBy = [];
 

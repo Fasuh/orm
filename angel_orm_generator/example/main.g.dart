@@ -147,6 +147,7 @@ class EmployeeQuery extends Query<Employee, EmployeeQueryWhere> {
   }
 
   joinEmployer() {
+    if (joinNames.contains('employer')) return null;
     leftJoin('employers', 'employer_id', 'id', additionalFields: const [
       'id',
       'created_at',
@@ -155,6 +156,7 @@ class EmployeeQuery extends Query<Employee, EmployeeQueryWhere> {
       'first_name',
       'last_name'
     ]);
+    joinNames.add('employer');
   }
 }
 
@@ -334,6 +336,7 @@ class EmployerQuery extends Query<Employer, EmployerQueryWhere> {
   }
 
   joinEmployes() {
+    if (joinNames.contains('employes')) return null;
     leftJoin('employees', 'id', 'employer_id', additionalFields: const [
       'id',
       'created_at',
@@ -344,9 +347,11 @@ class EmployerQuery extends Query<Employer, EmployerQueryWhere> {
       'salary',
       'employer_id'
     ]);
+    joinNames.add('employes');
   }
 
   joinCompany() {
+    if (joinNames.contains('company')) return null;
     leftJoin('companies', 'id', 'employer_id', additionalFields: const [
       'id',
       'created_at',
@@ -356,6 +361,7 @@ class EmployerQuery extends Query<Employer, EmployerQueryWhere> {
       'last_name',
       'employer_id'
     ]);
+    joinNames.add('company');
   }
 
   @override
@@ -581,6 +587,7 @@ class CompanyQuery extends Query<Company, CompanyQueryWhere> {
   }
 
   joinEmployer() {
+    if (joinNames.contains('employer')) return null;
     leftJoin('employers', 'employer_id', 'id', additionalFields: const [
       'id',
       'created_at',
@@ -589,6 +596,7 @@ class CompanyQuery extends Query<Company, CompanyQueryWhere> {
       'first_name',
       'last_name'
     ]);
+    joinNames.add('employer');
   }
 }
 

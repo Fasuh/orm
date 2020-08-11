@@ -268,6 +268,9 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
             m
               ..name = 'join${fieldName[0].toUpperCase()}${fieldName.substring(1)}'
               ..body = Block((b) {
+                b.statements
+                    .add(new Code('if (joinNames.contains(\'${fieldName}\')) return null;'));
+
                 var joinArgs = [relation.foreignTable, relation.localKey, relation.foreignKey]
                     .map(literalString)
                     .toList();
@@ -281,6 +284,8 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
                   'additionalFields':
                   literalConstList(additionalFields.toList()),
                 }));
+
+                b.statements.add(Code('joinNames.add(\'${fieldName}\');'));
               });
           }));
         }
