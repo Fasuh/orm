@@ -1,4 +1,5 @@
 import 'dart:async';
+import '../angel_orm.dart';
 import 'query_executor.dart';
 import 'union.dart';
 

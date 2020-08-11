@@ -274,44 +274,6 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
               refer('_where')
                   .assign(queryWhereType.newInstance([refer('this')])),
             );
-
-            ctx.relations.forEach((fieldName, relation) {
-              //var name = ctx.buildContext.resolveFieldName(fieldName);
-              if (relation.type == RelationshipType.belongsTo ||
-                  relation.type == RelationshipType.hasOne ||
-                  relation.type == RelationshipType.hasMany) {
-                var foreign = relation.throughContext ?? relation.foreign;
-
-                // If this is a many-to-many, add the fields from the other object.
-                var additionalFields = relation.foreign.effectiveFields
-                    // .where((f) => f.name != 'id' || !isSpecialId(ctx, f))
-                    .map((f) => literalString(relation.foreign.buildContext
-                        .resolveFieldName(f.name)));
-
-                var joinArgs = [relation.localKey, relation.foreignKey]
-                    .map(literalString)
-                    .toList();
-
-                // Instead of passing the table as-is, we'll compile a subquery.
-                if (relation.type == RelationshipType.hasMany) {
-                  var foreignQueryType =
-                      foreign.buildContext.modelClassNameRecase.pascalCase +
-                          'Query';
-                  joinArgs.insert(
-                      0,
-                      refer(foreignQueryType).newInstance(
-                          [], {'trampoline': refer('trampoline')}));
-                } else {
-                  joinArgs.insert(0, literalString(foreign.tableName));
-                }
-
-                b.addExpression(refer('leftJoin').call(joinArgs, {
-                  'additionalFields':
-                      literalConstList(additionalFields.toList()),
-                  'trampoline': refer('trampoline'),
-                }));
-              }
-            });
           });
       }));
 
