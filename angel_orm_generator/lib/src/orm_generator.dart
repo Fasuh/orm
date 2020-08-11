@@ -238,7 +238,7 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
                     ..addExpression(refer('elements').assign(refer('elements')).operatorAdd(refer(relation.foreign.effectiveFields.length.toString())))
               );
               var blockStr = block.accept(new DartEmitter());
-              var ifStr = 'if (row.length > elements && joins.contains(\'${relation.foreign.tableName}\')) { $blockStr }';
+              var ifStr = 'if (row.length > elements && joinNames.contains(\'${relation.foreign.tableName}\')) { $blockStr }';
               b.statements.add(new Code(ifStr));
               i += relation.foreign.effectiveFields.length;
             });
@@ -269,7 +269,7 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
               ..name = 'join${fieldName[0].toUpperCase()}${fieldName.substring(1)}'
               ..body = Block((b) {
                 b.statements
-                    .add(new Code('if (joinNames.contains(\'${fieldName}\')) return null;'));
+                    .add(new Code('if (joinNames.contains(\'${relation.foreignTable}\')) return null;'));
 
                 var joinArgs = [relation.foreignTable, relation.localKey, relation.foreignKey]
                     .map(literalString)
@@ -285,7 +285,7 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
                   literalConstList(additionalFields.toList()),
                 }));
 
-                b.statements.add(Code('joinNames.add(\'${fieldName}\');'));
+                b.statements.add(Code('joinNames.add(\'${relation.foreignTable}\');'));
               });
           }));
         }
