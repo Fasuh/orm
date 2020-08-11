@@ -1,9 +1,9 @@
 import '../angel_orm.dart';
 
-class QueryRelation {
+class QueryRelation<T> {
   final String name;
   final int length;
-  final Query query;
+  final Function<T>(List<dynamic>) query;
 
   QueryRelation(this.name, this.length, this.query);
 }
