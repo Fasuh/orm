@@ -207,11 +207,11 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
             b.addExpression(refer(i.toString()).assignVar('elements'));
 
             b.statements.add(Code(
-                'for(var join in joins) {'
+                'for(QueryRelation<${ctx.buildContext.modelClassName}> join in joins) {'
             ));
 
             b
-              ..addExpression(refer('join').property('query').call([refer('row')
+              ..addExpression(refer('model').assign(refer('join')).property('query').call([refer('row')
                   .property('skip')
                   .call([refer('elements')])
                   .property('take')
@@ -285,34 +285,35 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
             relation.type == RelationshipType.hasMany) {
           final className = relation.foreign.buildContext.modelClassName;
           clazz.methods.add(Method((m) {
-            final method = MethodBuilder()
-              ..lambda = true
-              ..requiredParameters = ListBuilder<Parameter>([
-                (ParameterBuilder()
-                  ..name = 'list'
-                  ..type = refer('List')).build(),
-                (ParameterBuilder()
-                  ..name = 'model'
-                  ..type = refer(rc.pascalCase)).build(),
-              ])
-              ..body = Block((b) {
-                var expression = refer('${className}Query').newInstance([]).property('parseRow').call([refer('list')]);
-
-                if (relation.type == RelationshipType.hasMany) {
-                  expression = literalList([expression]);
-                  var pp = expression.accept(DartEmitter());
-                  expression = CodeExpression(
-                      Code('$pp.where((x) => x != null).toList()'));
-                }
-
-                b.statements.add(refer('model').property('copyWith').call([], {fieldName: expression}).code);
-            });
             m
               ..name = 'join${fieldName[0].toUpperCase()}${fieldName.substring(1)}'
               ..body = Block((b) {
-                b.addExpression(method.build().closure.assignVar('parser'));
                 b.statements
                     .add(Code('if (joins.any((a) => a.name == \'${relation.foreignTable}\')) return null;'));
+                final method = MethodBuilder()
+                  ..lambda = true
+                  ..requiredParameters = ListBuilder<Parameter>([
+                    (ParameterBuilder()
+                      ..name = 'list'
+                      ..type = refer('List')).build(),
+                    (ParameterBuilder()
+                      ..name = 'model'
+                      ..type = refer(rc.pascalCase)).build(),
+                  ])
+                  ..body = Block((b) {
+                    var expression = refer('${className}Query').newInstance([]).property('parseRow').call([refer('list')]);
+
+                    if (relation.type == RelationshipType.hasMany) {
+                      expression = literalList([expression]);
+                      var pp = expression.accept(DartEmitter());
+                      expression = CodeExpression(
+                          Code('$pp.where((x) => x != null).toList()'));
+                    }
+
+                    b.statements.add(refer('model').property('copyWith').call([], {fieldName: expression}).code);
+                  });
+                b.addExpression(method.build().closure.assignVar('parser'));
+
                 b.addExpression(refer('QueryRelation').newInstance([literalString(relation.foreignTable),
                   literalNum(relation.foreign.effectiveFields.length),
                   refer('parser')],
