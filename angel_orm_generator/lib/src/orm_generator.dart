@@ -265,16 +265,13 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
             relation.type == RelationshipType.hasOne ||
             relation.type == RelationshipType.hasMany) {
           clazz.methods.add(Method((m) {
-            final className = '${fieldName[0].toUpperCase()}${fieldName.substring(1)}';
             m
-              ..name = 'join$className'
+              ..name = 'join${fieldName[0].toUpperCase()}${fieldName.substring(1)}'
               ..body = Block((b) {
-                final parser = MethodBuilder()
-                  ..lambda = true;
                 b.statements
                     .add(Code('if (joins.any((a) => a.name == \'${relation.foreignTable}\')) return null;'));
                 b.addExpression(refer('QueryRelation').newInstance([literalString(relation.foreignTable), literalNum(relation.foreign.effectiveFields.length), CodeExpression(Code(
-                  '<$className>(list) => ${className}Query().parseRow(list)'
+                  '(List list) => ${relation.foreign.buildContext.modelClassName}Query().parseRow(list)'
                 ))]).assignVar('join'));
 
                 var joinArgs = [relation.foreignTable, relation.localKey, relation.foreignKey]
