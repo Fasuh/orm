@@ -7,6 +7,7 @@ import 'package:build/build.dart';
 import 'package:code_builder/code_builder.dart';
 import 'package:source_gen/source_gen.dart';
 import 'orm_build_context.dart';
+import 'package:built_collection/built_collection.dart';
 
 var floatTypes = [
   ColumnType.decimal,
@@ -216,7 +217,7 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
                   .property('take')
                   .call([refer('join').property('length')])
                   .property('toList')
-                  .call([])]))
+                  .call([]), refer('model')]))
               ..addExpression(refer('elements').assign(refer('elements')).operatorAdd(refer('join').property('length')));
 
             b.statements.add(Code(
@@ -282,19 +283,40 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
         if (relation.type == RelationshipType.belongsTo ||
             relation.type == RelationshipType.hasOne ||
             relation.type == RelationshipType.hasMany) {
+          final className = relation.foreign.buildContext.modelClassName;
           clazz.methods.add(Method((m) {
+            final method = MethodBuilder()
+              ..lambda = true
+              ..requiredParameters = ListBuilder<Parameter>([
+                (ParameterBuilder()
+                  ..name = 'list'
+                  ..type = refer('List')).build(),
+                (ParameterBuilder()
+                  ..name = 'model'
+                  ..type = refer(rc.pascalCase)).build(),
+              ])
+              ..body = Block((b) {
+                var expression = refer('${className}Query').newInstance([]).property('parseRow').call([refer('list')]);
+
+                if (relation.type == RelationshipType.hasMany) {
+                  expression = literalList([expression]);
+                  var pp = expression.accept(DartEmitter());
+                  expression = CodeExpression(
+                      Code('$pp.where((x) => x != null).toList()'));
+                }
+
+                b.statements.add(refer('model').property('copyWith').call([], {fieldName: expression}).code);
+            });
             m
               ..name = 'join${fieldName[0].toUpperCase()}${fieldName.substring(1)}'
               ..body = Block((b) {
-                final className = relation.foreign.buildContext.modelClassName;
+                b.addExpression(method.build().closure.assignVar('parser'));
                 b.statements
                     .add(Code('if (joins.any((a) => a.name == \'${relation.foreignTable}\')) return null;'));
                 b.addExpression(refer('QueryRelation').newInstance([literalString(relation.foreignTable),
                   literalNum(relation.foreign.effectiveFields.length),
-                  CodeExpression(Code(
-                    '(list) => '
-                  ))],
-                {}, [refer(className)]).assignVar('join'));
+                  refer('parser')],
+                {}, [refer(rc.pascalCase)]).assignVar('join'));
 
                 var joinArgs = [relation.foreignTable, relation.localKey, relation.foreignKey]
                     .map(literalString)
