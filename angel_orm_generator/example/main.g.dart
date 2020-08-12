@@ -133,11 +133,9 @@ class EmployeeQuery extends Query<Employee, EmployeeQueryWhere> {
         lastName: (row[5] as String),
         salary: double.tryParse(row[6].toString()));
     var elements = 8;
-    for (var relation in joins) {
-      model = model.copyWith(
-          employer:
-              EmployerQuery().parseRow(row.skip(elements).take(6).toList()));
-      elements = elements + 6;
+    for (var join in joins) {
+      join.query(row.skip(elements).take(join.length).toList());
+      elements = elements + join.length;
     }
     return model;
   }
@@ -149,8 +147,8 @@ class EmployeeQuery extends Query<Employee, EmployeeQueryWhere> {
 
   joinEmployer() {
     if (joins.any((a) => a.name == 'employers')) return null;
-    var join = QueryRelation(
-        'employers', 6, (List list) => EmployerQuery().parseRow(list));
+    var join =
+        QueryRelation<Employer>('employers', 6, EmployerQuery().parseRow);
     leftJoin('employers', 'employer_id', 'id', additionalFields: const [
       'id',
       'created_at',
@@ -318,18 +316,9 @@ class EmployerQuery extends Query<Employer, EmployerQueryWhere> {
         firstName: (row[4] as String),
         lastName: (row[5] as String));
     var elements = 6;
-    for (var relation in joins) {
-      model = model.copyWith(
-          employes: [
-        EmployeeQuery().parseRow(row.skip(elements).take(8).toList())
-      ].where((x) => x != null).toList());
-      elements = elements + 8;
-    }
-    for (var relation in joins) {
-      model = model.copyWith(
-          company:
-              CompanyQuery().parseRow(row.skip(elements).take(7).toList()));
-      elements = elements + 7;
+    for (var join in joins) {
+      join.query(row.skip(elements).take(join.length).toList());
+      elements = elements + join.length;
     }
     return model;
   }
@@ -341,8 +330,8 @@ class EmployerQuery extends Query<Employer, EmployerQueryWhere> {
 
   joinEmployes() {
     if (joins.any((a) => a.name == 'employees')) return null;
-    var join = QueryRelation(
-        'employees', 8, (List list) => EmployeeQuery().parseRow(list));
+    var join =
+        QueryRelation<Employee>('employees', 8, EmployeeQuery().parseRow);
     leftJoin('employees', 'id', 'employer_id', additionalFields: const [
       'id',
       'created_at',
@@ -358,8 +347,7 @@ class EmployerQuery extends Query<Employer, EmployerQueryWhere> {
 
   joinCompany() {
     if (joins.any((a) => a.name == 'companies')) return null;
-    var join = QueryRelation(
-        'companies', 7, (List list) => CompanyQuery().parseRow(list));
+    var join = QueryRelation<Company>('companies', 7, CompanyQuery().parseRow);
     leftJoin('companies', 'id', 'employer_id', additionalFields: const [
       'id',
       'created_at',
@@ -581,11 +569,9 @@ class CompanyQuery extends Query<Company, CompanyQueryWhere> {
         firstName: (row[4] as String),
         lastName: (row[5] as String));
     var elements = 7;
-    for (var relation in joins) {
-      model = model.copyWith(
-          employer:
-              EmployerQuery().parseRow(row.skip(elements).take(6).toList()));
-      elements = elements + 6;
+    for (var join in joins) {
+      join.query(row.skip(elements).take(join.length).toList());
+      elements = elements + join.length;
     }
     return model;
   }
@@ -597,8 +583,8 @@ class CompanyQuery extends Query<Company, CompanyQueryWhere> {
 
   joinEmployer() {
     if (joins.any((a) => a.name == 'employers')) return null;
-    var join = QueryRelation<Employer>(
-        'employers', 6, EmployerQuery().parseRow);
+    var join =
+        QueryRelation<Employer>('employers', 6, EmployerQuery().parseRow);
     leftJoin('employers', 'employer_id', 'id', additionalFields: const [
       'id',
       'created_at',

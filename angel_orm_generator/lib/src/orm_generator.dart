@@ -205,43 +205,61 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
 
             b.addExpression(refer(i.toString()).assignVar('elements'));
 
-            ctx.relations.forEach((name, relation) {
-              if (!const [
-                RelationshipType.hasOne,
-                RelationshipType.belongsTo,
-                RelationshipType.hasMany
-              ].contains(relation.type)) return;
-              var foreign = relation.foreign;
-              var skipToList = refer('row')
+            b.statements.add(Code(
+                'for(var join in joins) {'
+            ));
+
+            b
+              ..addExpression(refer('join').property('query').call([refer('row')
                   .property('skip')
                   .call([refer('elements')])
                   .property('take')
-                  .call([literalNum(relation.foreign.effectiveFields.length)])
+                  .call([refer('join').property('length')])
                   .property('toList')
-                  .call([]);
-              var parsed = refer(
-                  '${foreign.buildContext.modelClassNameRecase.pascalCase}Query')
-                  .newInstance([])
-                  .property('parseRow')
-                  .call([skipToList]);
-              if (relation.type == RelationshipType.hasMany) {
-                parsed = literalList([parsed]);
-                var pp = parsed.accept(DartEmitter());
-                parsed = CodeExpression(
-                    Code('$pp.where((x) => x != null).toList()'));
-              }
-              var expr =
-                  refer('model').property('copyWith').call([], {name: parsed});
-              var block = new Block(
-                  (b) => b
-                    ..addExpression(refer('model').assign(expr))
-                    ..addExpression(refer('elements').assign(refer('elements')).operatorAdd(refer(relation.foreign.effectiveFields.length.toString())))
-              );
-              var blockStr = block.accept(new DartEmitter());
-              var ifStr = 'for (var relation in joins) { $blockStr }';
-              b.statements.add(new Code(ifStr));
-              i += relation.foreign.effectiveFields.length;
-            });
+                  .call([])]))
+              ..addExpression(refer('elements').assign(refer('elements')).operatorAdd(refer('join').property('length')));
+
+            b.statements.add(Code(
+                '}'
+            ));
+
+            // TODO - prossibly throw away
+//            ctx.relations.forEach((name, relation) {
+//              if (!const [
+//                RelationshipType.hasOne,
+//                RelationshipType.belongsTo,
+//                RelationshipType.hasMany
+//              ].contains(relation.type)) return;
+//              var foreign = relation.foreign;
+//              var skipToList = refer('row')
+//                  .property('skip')
+//                  .call([refer('elements')])
+//                  .property('take')
+//                  .call([literalNum(relation.foreign.effectiveFields.length)])
+//                  .property('toList')
+//                  .call([]);
+//              var parsed = refer(
+//                  '${foreign.buildContext.modelClassNameRecase.pascalCase}Query')
+//                  .newInstance([])
+//                  .property('parseRow')
+//                  .call([skipToList]);
+//              if (relation.type == RelationshipType.hasMany) {
+//                parsed = literalList([parsed]);
+//                var pp = parsed.accept(DartEmitter());
+//                parsed = CodeExpression(
+//                    Code('$pp.where((x) => x != null).toList()'));
+//              }
+//              var expr =
+//                  refer('model').property('copyWith').call([], {name: parsed});
+//              var block = new Block(
+//                  (b) => b
+//                    ..addExpression(refer('model').assign(expr))
+//                    ..addExpression(refer('elements').assign(refer('elements')).operatorAdd(refer(relation.foreign.effectiveFields.length.toString())))
+//              );
+//              var blockStr = block.accept(new DartEmitter());
+//              b.statements.add(new Code(blockStr.toString()));
+//              i += relation.foreign.effectiveFields.length;
+//            });
 
             b.addExpression(refer('model').returned);
           });
@@ -268,11 +286,15 @@ class OrmGenerator extends GeneratorForAnnotation<Orm> {
             m
               ..name = 'join${fieldName[0].toUpperCase()}${fieldName.substring(1)}'
               ..body = Block((b) {
+                final className = relation.foreign.buildContext.modelClassName;
                 b.statements
                     .add(Code('if (joins.any((a) => a.name == \'${relation.foreignTable}\')) return null;'));
-                b.addExpression(refer('QueryRelation').newInstance([literalString(relation.foreignTable), literalNum(relation.foreign.effectiveFields.length), CodeExpression(Code(
-                  '(List list) => ${relation.foreign.buildContext.modelClassName}Query().parseRow(list)'
-                ))]).assignVar('join'));
+                b.addExpression(refer('QueryRelation').newInstance([literalString(relation.foreignTable),
+                  literalNum(relation.foreign.effectiveFields.length),
+                  CodeExpression(Code(
+                    '(list) => '
+                  ))],
+                {}, [refer(className)]).assignVar('join'));
 
                 var joinArgs = [relation.foreignTable, relation.localKey, relation.foreignKey]
                     .map(literalString)
