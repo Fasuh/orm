@@ -240,6 +240,14 @@ class StringSqlExpressionBuilder extends SqlExpressionBuilder<String> {
     _value = null;
   }
 
+  void iLike(String pattern, {String Function(String) sanitize}) {
+    sanitize ??= (s) => pattern;
+    _raw = 'ILIKE \'' + sanitize('@$substitution') + '\'';
+    query.substitutionValues[substitution] = pattern;
+    _hasValue = true;
+    _value = null;
+  }
+
   void isBetween(String lower, String upper) {
     query.substitutionValues[lowerName] = lower;
     query.substitutionValues[upperName] = upper;
