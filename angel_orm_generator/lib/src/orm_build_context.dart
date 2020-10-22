@@ -25,7 +25,7 @@ bool isSpecialId(OrmBuildContext ctx, FieldElement field) {
       field is! RelationFieldImpl &&
           (field.name == 'id' &&
               const TypeChecker.fromRuntime(Model)
-                  .isAssignableFromType(ctx.buildContext.clazz.type));
+                  .isAssignableFromType(ctx.buildContext.clazz.thisType));
 }
 
 Element _findElement(FieldElement field) {
@@ -259,7 +259,7 @@ Future<OrmBuildContext> buildOrmContext(
           var foreign = relation.throughContext ?? relation.foreign;
           var type = foreignField.type;
           if (isSpecialId(foreign, foreignField))
-            type = field.type.element.context.typeProvider.intType;
+            type = field.type.element.library.typeProvider.intType;
           var rf = new RelationFieldImpl(name, relation, type, field);
           ctx.effectiveFields.add(rf);
         }
@@ -268,7 +268,7 @@ Future<OrmBuildContext> buildOrmContext(
       ctx.relations[field.name] = relation;
     } else {
       if (column?.type == null)
-        throw 'Cannot infer SQL column type for field "${ctx.buildContext.originalClassName}.${field.name}" with type "${field.type.displayName}".';
+        throw 'Cannot infer SQL column type for field "${ctx.buildContext.originalClassName}.${field.name}" with type "${field.type.getDisplayString(withNullability: false)}".';
       ctx.columns[field.name] = column;
 
       if (!ctx.effectiveFields.any((f) => f.name == field.name))
