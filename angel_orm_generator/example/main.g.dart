@@ -13,7 +13,7 @@ class EmployeeMigration extends Migration {
       table.serial('id')..primaryKey();
       table.timeStamp('created_at');
       table.timeStamp('updated_at');
-      table.varChar('unique_id');
+      table.varChar('unique_id')..unique();
       table.varChar('first_name');
       table.varChar('last_name');
       table.declare('salary', ColumnType('decimal'));
@@ -37,7 +37,7 @@ class EmployerMigration extends Migration {
       table.serial('id')..primaryKey();
       table.timeStamp('created_at');
       table.timeStamp('updated_at');
-      table.varChar('unique_id');
+      table.varChar('unique_id')..unique();
       table.varChar('first_name');
       table.varChar('last_name');
     });
@@ -56,7 +56,7 @@ class CompanyMigration extends Migration {
       table.serial('id')..primaryKey();
       table.timeStamp('created_at');
       table.timeStamp('updated_at');
-      table.varChar('unique_id');
+      table.varChar('unique_id')..unique();
       table.varChar('first_name');
       table.varChar('last_name');
       table
